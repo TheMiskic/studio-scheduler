@@ -1,6 +1,6 @@
 # Studio Scheduler — Specification
 
-Version 1.0 · Status: approved for build
+Version 2.0 · Status: built and deployed
 
 ## 1. Overview
 
@@ -18,7 +18,8 @@ repo, and the repository's commit history doubles as an audit log of every sched
 
 - Public, mobile-friendly calendar showing which dates and times are taken.
 - Owner can add, edit, and delete bookings from a browser with no local tooling.
-- Booking hours enforced automatically: weekdays open late, weekends open all day.
+- Booking hours enforced automatically: weekdays open late, weekends open from midday.
+- Permanent weekly slots, stored once as a rule and expanded across the calendar.
 - Zero hosting cost and no external services beyond GitHub itself.
 - Plain HTML, CSS, and JavaScript — no framework, no bundler, no dependencies.
 
@@ -26,7 +27,6 @@ repo, and the repository's commit history doubles as an audit log of every sched
 
 - Self-service booking by clients. Visitors cannot write; they contact the owner.
 - Multiple rooms or resources. One bookable space.
-- Recurring bookings. Each booking is a single dated slot.
 - Approval workflow. A booking exists or it does not.
 - Real-time sync between simultaneous admins.
 - Payments, reminders, or notifications.
@@ -56,7 +56,7 @@ required to write. This avoids editing against a stale CDN copy.
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "updated": "2026-08-30T09:12:00.000Z",
   "bookings": [
     {
@@ -66,9 +66,23 @@ required to write. This avoids editing against a stale CDN copy.
       "end": "19:30",
       "name": "Ana K."
     }
+  ],
+  "recurring": [
+    {
+      "id": "r_9f8e7d6c",
+      "weekday": 1,
+      "start": "20:00",
+      "end": "21:30",
+      "name": "Marko P.",
+      "from": "2026-09-07",
+      "until": null,
+      "skip": ["2026-09-21"]
+    }
   ]
 }
 ```
+
+A `bookings` entry is one dated slot:
 
 | Field   | Type   | Rules |
 |---------|--------|-------|
@@ -78,7 +92,30 @@ required to write. This avoids editing against a stale CDN copy.
 | `end`   | string | `HH:MM`, 24-hour, on the slot grid. May be `24:00`, meaning end of that date. |
 | `name`  | string | 1–60 characters after trimming. Free text. |
 
-`updated` is an ISO 8601 UTC timestamp set on every write. `version` allows future migrations.
+A `recurring` entry is one permanent weekly slot:
+
+| Field     | Type          | Rules |
+|-----------|---------------|-------|
+| `id`      | string        | `r_` followed by 8 lowercase hex characters. Immutable. |
+| `weekday` | number        | 0 for Sunday through 6 for Saturday, matching `Date.getDay()`. |
+| `start`   | string        | `HH:MM`, inside that weekday's window, on the slot grid. |
+| `end`     | string        | `HH:MM`, same rules. |
+| `name`    | string        | 1–60 characters after trimming. |
+| `from`    | string        | First date the rule applies, `YYYY-MM-DD`. Must itself fall on `weekday`. |
+| `until`   | string / null | Last date it applies, inclusive. `null` means it never ends. |
+| `skip`    | string[]      | Dates on which this week's occurrence is cancelled. |
+
+`updated` is an ISO 8601 UTC timestamp set on every write. `version` is 2; a file written by
+version 1 has no `recurring` key, and both pages add an empty one on load rather than failing.
+
+### Expansion
+
+A rule is stored once and expanded at render time. It produces an occurrence on a date when the
+date falls on `weekday`, is not before `from`, is not after `until`, and is not listed in `skip`.
+An occurrence is shaped exactly like a booking, with a synthetic id of `<ruleId>@<date>` and a
+`ruleId` field, so one rendering path and one overlap check serve both kinds. Nothing is ever
+written back for an occurrence — cancelling one appends a date to the rule's `skip`, which is why a
+permanent slot stays a single line in the file however long it runs.
 
 ### Time representation
 
@@ -92,8 +129,9 @@ display are wall-clock, daylight-saving transitions cannot shift an existing boo
 
 ### File ordering
 
-Bookings are sorted by `date`, then `start`, then `id` before every write. A deterministic file
-order keeps commit diffs to the lines that actually changed.
+Bookings are sorted by `date`, then `start`, then `id` before every write; rules by `weekday`, then
+`start`, then `id`. A deterministic file order keeps commit diffs to the lines that actually
+changed.
 
 ## 5. Booking hours
 
@@ -102,7 +140,7 @@ Bookable windows depend on the day of the week.
 | Day type           | Window        |
 |--------------------|---------------|
 | Weekday (Mon–Fri)  | 16:00 – 24:00 |
-| Weekend (Sat, Sun) | 00:00 – 24:00 |
+| Weekend (Sat, Sun) | 12:00 – 24:00 |
 
 Both windows are defined in `config.json` and can be changed without touching code. Weekend days
 are a configurable list of day indices, so a studio that treats Friday evening as weekend can say
@@ -125,7 +163,9 @@ English, since they are repository metadata rather than interface text.
 count badge. Days outside the current month are dimmed. Today is outlined.
 
 **Day detail.** Clicking a day opens a list beneath the grid: each booking as `18:00 – 19:30 · Ana
-K.`, in time order, plus the day's bookable window and the free ranges remaining inside it.
+K.`, in time order, plus the day's bookable window and the free ranges remaining inside it. Slots
+coming from a weekly rule carry a `stalni` tag; free ranges are computed against both kinds, so a
+permanent slot removes its hours from the free list exactly as a one-off does.
 
 **Navigation.** Previous and next month buttons and a "Today" button. The visible month is
 reflected in the URL hash (`#2026-09`) so a specific month can be linked.
@@ -154,20 +194,37 @@ authorization boundary.
 (`{owner}.github.io/{repo}/`) and overridable. A password-type field for the token, with Save and
 Disconnect. Saved values live in `localStorage`. A status line shows the connected identity.
 
-**Booking form.** Date picker, start `<select>`, end `<select>`, name field, Add button. The two
-selects are populated from the chosen date's window and the configured slot length, so an invalid
-time cannot be picked in the first place. The end list starts one slot after the selected start.
-Choosing a date repopulates both.
+**Booking form.** A repeat selector (`Jednokratno` / `Svake nedelje`), date picker, start
+`<select>`, end `<select>`, name field, Add button. The two selects are populated from the chosen
+date's window and the configured slot length, so an invalid time cannot be picked in the first
+place. The end list starts one slot after the selected start. Choosing a date repopulates both.
 
-**Booking list.** Bookings for the visible month, grouped by date, each with Edit and Delete. Edit
-loads the row into the form in edit mode with Save changes and Cancel. Delete asks for confirmation
-naming the booking.
+Switching the selector to weekly relabels the date field to `Prvi termin`, reveals an optional
+`Ponavljaj do` end date, and derives the weekday from the chosen date — so a rule is created by
+picking the first session rather than by picking a weekday from a separate list. The repeat
+selector is disabled while editing: a one-off cannot be turned into a rule or the reverse, since
+the two have different identities and the change would be indistinguishable from a delete plus an
+add.
+
+**Weekly rules panel.** Every rule, sorted by weekday and time, each showing its range (`od 7. 9.
+2026.` or `5. 9. 2026. – 19. 9. 2026.`), with Edit and Delete. A rule with cancelled weeks also
+shows an `otkazano: N` tag and a button restoring them.
+
+**Month list.** Bookings and expanded rule occurrences for the visible month, grouped by date. A
+one-off offers Edit and Delete. An occurrence offers `Otkaži ovaj`, which appends its date to the
+rule's `skip`, and `Izmeni pravilo`, which loads the whole rule for editing. Deleting a rule
+removes all of its occurrences, and the confirmation says so.
 
 **Commit granularity.** Each action commits immediately, one commit per change:
 
 - `Add booking: 2026-09-14 18:00-19:30 (Ana K.)`
 - `Edit booking: 2026-09-14 18:00-19:30 (Ana K.)`
 - `Delete booking: 2026-09-14 18:00-19:30 (Ana K.)`
+- `Add weekly schedule: Mon 18:00-19:30 (Ana K.) from 2026-09-07`
+- `Edit weekly schedule: Mon 17:00-18:30 (Ana K.) from 2026-09-07 until 2026-09-21`
+- `Delete weekly schedule: Mon 17:00-18:30 (Ana K.)`
+- `Cancel occurrence: 2026-09-21 18:00-19:30 (Ana K.)`
+- `Restore cancelled occurrences: Mon 18:00-19:30 (Ana K.)`
 
 **Feedback.** After a successful commit the page reports that the change is saved and that the
 public site updates in about a minute — it does not claim the visitor-facing site is already
@@ -193,18 +250,36 @@ lacking access to it.
 
 ## 9. Validation rules
 
-Applied on every add and edit, before any network write:
+Applied on every add and edit, before any network write, and again inside the commit cycle against
+the freshly fetched file — so a change is checked against what is actually in the repository, not
+against what the page loaded some minutes earlier.
+
+### One-off bookings
 
 1. `date` matches `YYYY-MM-DD` and is a real calendar date.
 2. `start` and `end` match `HH:MM` and land on the slot grid.
 3. `start` is strictly before `end`.
 4. Both fall inside that date's bookable window.
-5. No overlap with another booking on the same date. Intervals are half-open, so a slot ending at
-   19:30 and one starting at 19:30 do not conflict. When editing, the booking's own row is excluded
-   from the comparison.
+5. No overlap with anything else on that date — another booking or a rule occurrence. Intervals are
+   half-open, so a slot ending at 19:30 and one starting at 19:30 do not conflict. When editing,
+   the booking's own row is excluded from the comparison. The message names which kind it hit.
 6. `name` is 1–60 characters after trimming.
 
 A past date produces a warning, not a rejection — the owner may be recording history.
+
+### Weekly rules
+
+1. `from` is a real date and falls on the rule's own weekday.
+2. `until`, if given, is a real date not earlier than `from`.
+3. Times satisfy the same grid, ordering, and window checks, measured against that weekday's window.
+4. No overlap with another rule on the same weekday whose date range intersects this one. Two rules
+   on the same weekday at the same hour are only allowed if their ranges do not meet.
+5. No overlap with any one-off booking on a date the rule would fire. An open-ended rule is checked
+   over a two-year horizon; a conflict further out than that would be created by a booking made
+   later, which is caught by check 5 in the previous list instead.
+
+Both directions are enforced, so the file cannot reach a state where a permanent slot and a one-off
+sit on top of each other regardless of which was entered first.
 
 ## 10. Security
 
@@ -233,7 +308,7 @@ A past date produces a warning, not a rejection — the owner may be recording h
   "hours": {
     "weekendDays": [0, 6],
     "weekday": { "open": "16:00", "close": "24:00" },
-    "weekend": { "open": "00:00", "close": "24:00" }
+    "weekend": { "open": "12:00", "close": "24:00" }
   },
   "contact": { "label": "Request a slot", "href": "mailto:you@example.com" },
   "repo": { "owner": "", "name": "", "branch": "main" }
@@ -292,5 +367,5 @@ timestamp parameter and `cache: 'no-store'`.
 ## 15. Possible later work
 
 Client self-service booking, which requires a token-holding proxy such as a Cloudflare Worker;
-multiple rooms; recurring slots; a pending/approved status. Each was considered and deliberately
-excluded from version 1.
+multiple rooms; a pending/approved status; recurrence patterns beyond weekly, such as fortnightly
+or monthly. Each was considered and deliberately excluded.

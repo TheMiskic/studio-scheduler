@@ -15,7 +15,7 @@ The interface is in Serbian (Latin script). All display strings live in `assets/
 | Day type           | Bookable      |
 |--------------------|---------------|
 | Monday–Friday      | 16:00 – 24:00 |
-| Saturday, Sunday   | 00:00 – 24:00 |
+| Saturday, Sunday   | 12:00 – 24:00 |
 
 Change either window in [`config.json`](config.json). The admin form only offers times inside the
 window for the chosen date, and validation rejects anything outside it.
@@ -50,6 +50,25 @@ changes.
 
 The public site is served from a CDN and lags a commit by roughly 30–60 seconds. The admin page
 reads through the GitHub API instead, so it is always current.
+
+## Permanent weekly slots
+
+A slot that repeats every week is stored once as a rule, not copied onto every date. In the admin
+page set **Ponavljanje** to *Svake nedelje*, pick the first session, and optionally give it an end
+date under *Ponavljaj do*; leaving that blank means it runs indefinitely. The weekday comes from
+the date you picked.
+
+Rules appear in their own **Stalni termini** panel and are expanded across the calendar
+automatically. In the month list each generated slot carries a `stalni` tag and offers:
+
+- **Otkaži ovaj** — drops that one week and leaves the rule running. Useful for a holiday.
+- **Izmeni pravilo** — edits the rule itself, and so every week it generates.
+
+A rule with cancelled weeks shows `otkazano: N` and a button that restores them. Deleting a rule
+removes all of its future slots at once.
+
+Bookings and rules are checked against each other in both directions, so a one-off cannot be placed
+on top of a weekly slot and a new weekly rule cannot be created over an existing booking.
 
 ## After changing anything in `assets/`
 
@@ -93,7 +112,7 @@ repository fields are filled in by hand.
 |------|---------|
 | `index.html` | Public calendar |
 | `admin.html` | Admin editor |
-| `assets/common.js` | Config, time and date helpers, booking hours, validation |
+| `assets/common.js` | Config, time and date helpers, booking hours, recurring rules, validation |
 | `assets/app.js` | Public calendar behavior |
 | `assets/admin.js` | Token handling, CRUD, GitHub commits |
 | `assets/style.css` | Styles, light and dark |
@@ -108,13 +127,19 @@ shape intact:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "updated": "2026-08-30T09:12:00.000Z",
   "bookings": [
     { "id": "b_1a2b3c4d", "date": "2026-09-14", "start": "18:00", "end": "19:30", "name": "Ana K." }
+  ],
+  "recurring": [
+    { "id": "r_9f8e7d6c", "weekday": 1, "start": "20:00", "end": "21:30", "name": "Marko P.",
+      "from": "2026-09-07", "until": null, "skip": ["2026-09-21"] }
   ]
 }
 ```
 
-`id` must be unique, `date` is `YYYY-MM-DD`, and times are `HH:MM` on the slot grid. `24:00` is a
-valid end time meaning midnight at the end of that date.
+`id` must be unique, `date` and `from` are `YYYY-MM-DD`, and times are `HH:MM` on the slot grid.
+`24:00` is a valid end time meaning midnight at the end of that date. In a rule, `weekday` is 0 for
+Sunday through 6 for Saturday, `until` may be `null` for "no end", and `skip` lists dates where that
+week is cancelled.

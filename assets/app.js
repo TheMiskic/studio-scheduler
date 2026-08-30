@@ -1,8 +1,9 @@
-/* Public calendar. Read-only: fetches the committed schedule and renders it. */
+/* Public calendar. Read-only: fetches the committed schedule and renders it,
+   expanding weekly rules into the days they fall on. */
 
 const view = {
   config: null,
-  bookings: [],
+  data: { version: 2, bookings: [], recurring: [] },
   updated: null,
   month: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   selected: null
@@ -65,11 +66,11 @@ async function loadBookings() {
     const res = await fetch(DATA_PATH + '?v=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    view.bookings = Array.isArray(data.bookings) ? data.bookings : [];
+    view.data = normalizeData(data);
     view.updated = data.updated || null;
     error.hidden = true;
   } catch (err) {
-    view.bookings = [];
+    view.data = normalizeData(null);
     error.textContent = 'Raspored nije moguće učitati. Osvežite stranicu ili pokušajte ponovo za koji trenutak.';
     error.hidden = false;
     console.error(err);
@@ -135,7 +136,7 @@ function renderMonth() {
   for (let i = 0; i < cells; i++) {
     const date = addDays(first, i - leading);
     const dateStr = formatDate(date);
-    const count = view.bookings.filter(b => b.date === dateStr).length;
+    const count = occurrencesForDate(view.data, dateStr).length;
 
     const cell = document.createElement('button');
     cell.type = 'button';
@@ -184,7 +185,7 @@ function renderDay() {
   el('day-window').textContent =
     (win.isWeekend ? 'Vikend' : 'Radni dan') + ': termini ' + win.label;
 
-  const slots = bookingsForDate(view.bookings, dateStr);
+  const slots = occurrencesForDate(view.data, dateStr);
   const list = el('day-slots');
   list.textContent = '';
   el('day-empty').hidden = slots.length > 0;
@@ -202,12 +203,21 @@ function renderDay() {
     name.textContent = b.name;
 
     li.append(time, name);
+
+    if (b.recurring) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = 'stalni';
+      tag.title = 'Ponavlja se svake nedelje';
+      li.appendChild(tag);
+    }
+
     list.appendChild(li);
   }
 
   const freeBox = el('day-free');
   freeBox.textContent = '';
-  const free = freeRanges(dateStr, view.bookings, cfg);
+  const free = freeRanges(dateStr, slots, cfg);
   if (free.length) {
     const heading = document.createElement('p');
     heading.className = 'hint';
@@ -232,12 +242,13 @@ function renderUpdated() {
 }
 
 /* ---------- iCalendar export ----------
-   Times are written as floating local time, matching how they are stored:
-   wall-clock, with no UTC conversion anywhere in the chain. */
+   Weekly rules are written out as one event per occurrence in the exported month
+   rather than as an RRULE, so an exported file needs no recurrence support to read.
+   Times are floating local, matching how they are stored: wall-clock, no UTC. */
 
 function downloadMonthIcs() {
   const month = monthKey(view.month);
-  const slots = bookingsForMonth(view.bookings, month);
+  const slots = occurrencesForMonth(view.data, month);
   if (!slots.length) {
     alert('Nema termina za izvoz u mesecu ' + MONTH_NAMES[view.month.getMonth()] + '.');
     return;

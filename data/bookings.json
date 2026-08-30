@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "updated": "2026-08-30T10:20:45.303Z",
   "bookings": [
     {
@@ -23,5 +23,6 @@
       "end": "22:00",
       "name": "Bozidar Glisic"
     }
-  ]
+  ],
+  "recurring": []
 }

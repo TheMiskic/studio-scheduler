@@ -6,7 +6,7 @@
   "hours": {
     "weekendDays": [0, 6],
     "weekday": { "open": "16:00", "close": "24:00" },
-    "weekend": { "open": "00:00", "close": "24:00" }
+    "weekend": { "open": "12:00", "close": "24:00" }
   },
   "contact": {
     "label": "Zatraži termin",

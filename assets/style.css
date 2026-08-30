@@ -199,7 +199,24 @@ h3 { font-size: .95rem; margin: 0 0 8px; }
 
 .slot-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
-.slot-actions { display: flex; gap: 6px; }
+.slot-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+.slot-note {
+  color: var(--muted);
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tag {
+  font-size: .7rem;
+  letter-spacing: .03em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+}
 
 .free-list {
   display: flex;
