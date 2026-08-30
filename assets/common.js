@@ -101,20 +101,28 @@ function parseMonthKey(str) {
   return new Date(Number(m[1]), month - 1, 1);
 }
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+const LOCALE = 'sr-RS';
+
+const DAY_NAMES = ['Nedelja', 'Ponedeljak', 'Utorak', 'Sreda', 'Četvrtak', 'Petak', 'Subota'];
+
+/* Nominative for headings such as "Septembar 2026". */
+const MONTH_NAMES = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Jun',
+  'Jul', 'Avgust', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
+
+/* Genitive for full dates: "14. septembra 2026." */
+const MONTH_NAMES_GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna',
+  'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
 
 function longDateLabel(dateStr) {
   const date = parseDate(dateStr);
   if (!date) return dateStr;
-  return DAY_NAMES[date.getDay()] + ', ' + date.getDate() + ' ' +
-    MONTH_NAMES[date.getMonth()] + ' ' + date.getFullYear();
+  return DAY_NAMES[date.getDay()] + ', ' + date.getDate() + '. ' +
+    MONTH_NAMES_GENITIVE[date.getMonth()] + ' ' + date.getFullYear() + '.';
 }
 
 /* Weekday column headers, rotated to the configured first day of the week. */
 function weekdayHeaders(config) {
-  const short = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const short = ['Ned', 'Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub'];
   const out = [];
   for (let i = 0; i < 7; i++) out.push(short[(config.weekStart + i) % 7]);
   return out;
@@ -209,42 +217,42 @@ function validateBooking(booking, list, config) {
 
   const date = parseDate(booking.date);
   if (!date) {
-    errors.push('Pick a valid date.');
+    errors.push('Izaberite ispravan datum.');
     return { errors, warnings };
   }
 
   const start = toMinutes(booking.start);
   const end = toMinutes(booking.end);
   if (start === null || end === null) {
-    errors.push('Start and end must be times in HH:MM form.');
+    errors.push('Početak i kraj moraju biti u obliku HH:MM.');
     return { errors, warnings };
   }
 
   const step = Math.max(5, Number(config.slotMinutes) || 30);
   const win = dayWindow(booking.date, config);
   if ((start - win.open) % step !== 0 || (end - win.open) % step !== 0) {
-    errors.push('Times must fall on the ' + step + '-minute slot grid.');
+    errors.push('Vremena moraju biti u koracima od ' + step + ' minuta.');
   }
   if (start >= end) {
-    errors.push('The end time must be after the start time.');
+    errors.push('Kraj mora biti posle početka.');
   }
   if (start < win.open || end > win.close) {
-    const dayType = win.isWeekend ? 'Weekends' : 'Weekdays';
-    errors.push(dayType + ' are bookable ' + win.label + '. Pick times inside that window.');
+    const dayType = win.isWeekend ? 'Vikendom' : 'Radnim danima';
+    errors.push(dayType + ' termini su mogući ' + win.label + '. Izaberite vreme u tom opsegu.');
   }
 
   const name = String(booking.name || '').trim();
-  if (!name) errors.push('Enter a name for the booking.');
-  else if (name.length > 60) errors.push('Keep the name to 60 characters or fewer.');
+  if (!name) errors.push('Unesite ime za termin.');
+  else if (name.length > 60) errors.push('Ime sme imati najviše 60 karaktera.');
 
   const conflict = findConflict(booking, list);
   if (conflict) {
-    errors.push('Overlaps an existing booking: ' +
+    errors.push('Preklapa se sa postojećim terminom: ' +
       rangeLabel(conflict.start, conflict.end) + ' (' + conflict.name + ').');
   }
 
   if (booking.date < todayString()) {
-    warnings.push('This date is in the past.');
+    warnings.push('Ovaj datum je u prošlosti.');
   }
 
   return { errors, warnings };

@@ -114,6 +114,13 @@ rejects out-of-window values before any commit.
 
 ## 6. Public page (`index.html`)
 
+**Language.** The interface is Serbian in Latin script, declared as `lang="sr-Latn-RS"`. Day and
+month names live in `assets/common.js`; full dates use the genitive month form ("14. septembra
+2026."), while month headings use the nominative ("Septembar 2026"). Timestamps are formatted with
+the `sr-RS` locale. Switching to Cyrillic means replacing those two name arrays and the literal
+strings in the three script files; nothing else is language-dependent. Git commit messages stay in
+English, since they are repository metadata rather than interface text.
+
 **Month grid.** Weeks start Monday. Each cell shows the day number and, if the day has bookings, a
 count badge. Days outside the current month are dimmed. Today is outlined.
 

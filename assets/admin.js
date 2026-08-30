@@ -32,8 +32,8 @@ async function init() {
   const weekday = admin.config.hours.weekday;
   const weekend = admin.config.hours.weekend;
   el('hours-summary').textContent =
-    'Bookable Mon–Fri ' + weekday.open + '–' + weekday.close +
-    ' · Sat–Sun ' + weekend.open + '–' + weekend.close + ' · ' + admin.config.timezone;
+    'Termini pon–pet ' + weekday.open + '–' + weekday.close +
+    ' · sub–ned ' + weekend.open + '–' + weekend.close + ' · ' + admin.config.timezone;
 
   restoreSettings();
   bindEvents();
@@ -43,7 +43,7 @@ async function init() {
   renderList();
 
   if (admin.token && admin.repo.owner && admin.repo.name) await refresh();
-  else setConnected(false, 'Not connected — open Settings and add a token');
+  else setConnected(false, 'Niste povezani — otvorite Podešavanja i unesite token');
 }
 
 /* ---------- settings ---------- */
@@ -95,7 +95,7 @@ function clearSettings() {
   admin.data = null;
   admin.sha = null;
   el('token').value = '';
-  setConnected(false, 'Disconnected');
+  setConnected(false, 'Veza prekinuta');
   renderList();
 }
 
@@ -106,8 +106,8 @@ function bindEvents() {
   el('conn-save').addEventListener('click', async () => {
     saveSettings();
     clearMessages();
-    if (!admin.token) { setConnected(false, 'Add a token to connect'); return; }
-    if (!admin.repo.owner || !admin.repo.name) { showError(['Fill in the owner and repository fields.']); return; }
+    if (!admin.token) { setConnected(false, 'Unesite token da biste se povezali'); return; }
+    if (!admin.repo.owner || !admin.repo.name) { showError(['Popunite polja Vlasnik i Repozitorijum.']); return; }
     const ok = await refresh();
     if (ok) el('conn-panel').classList.add('collapsed');
   });
@@ -160,7 +160,7 @@ async function fetchFile() {
   try {
     data = JSON.parse(base64ToText(payload.content));
   } catch (err) {
-    throw new Error('data/bookings.json in the repository is not valid JSON. Fix it in GitHub, then reload.');
+    throw new Error('data/bookings.json u repozitorijumu nije ispravan JSON. Ispravite ga na GitHub-u, pa osvežite.');
   }
   if (!Array.isArray(data.bookings)) data.bookings = [];
   return { data, sha: payload.sha };
@@ -200,7 +200,7 @@ async function commitChange(message, apply) {
     if ((res.status === 409 || res.status === 422) && attempt === 0) continue;
     throw await apiError(res, 'write');
   }
-  throw new Error('The file changed in the repository while saving. Reload and try again.');
+  throw new Error('Fajl je u međuvremenu izmenjen u repozitorijumu. Osvežite i pokušajte ponovo.');
 }
 
 async function apiError(res, phase) {
@@ -210,18 +210,19 @@ async function apiError(res, phase) {
     detail = body && body.message ? body.message : '';
   } catch (err) { /* body was not JSON */ }
 
-  if (res.status === 401) return new Error('The token was rejected. It may be expired or mistyped.');
+  if (res.status === 401) return new Error('Token je odbijen. Možda je istekao ili je pogrešno unet.');
   if (res.status === 403) {
-    return new Error('Access refused. The token needs Contents: Read and write on this repository. ' + detail);
+    return new Error('Pristup odbijen. Token mora imati Contents: Read and write za ovaj repozitorijum. ' + detail);
   }
   if (res.status === 404) {
-    return new Error('Not found: ' + admin.repo.owner + '/' + admin.repo.name + ' at ' + DATA_PATH +
-      ' on branch ' + admin.repo.branch + '. Check the settings, and that the token can see this repository.');
+    return new Error('Nije pronađeno: ' + admin.repo.owner + '/' + admin.repo.name + ' na putanji ' + DATA_PATH +
+      ', grana ' + admin.repo.branch + '. Proverite podešavanja i da li token ima pristup ovom repozitorijumu.');
   }
   if (res.status === 409 || res.status === 422) {
-    return new Error('The file changed in the repository while saving. Reload and try again.');
+    return new Error('Fajl je u međuvremenu izmenjen u repozitorijumu. Osvežite i pokušajte ponovo.');
   }
-  return new Error('GitHub returned ' + res.status + ' while trying to ' + phase + ' the file. ' + detail);
+  const action = phase === 'read' ? 'čitanju' : 'upisu';
+  return new Error('GitHub je vratio ' + res.status + ' pri ' + action + ' fajla. ' + detail);
 }
 
 /* Round-trip through TextEncoder/TextDecoder so non-ASCII names survive base64. */
@@ -251,7 +252,7 @@ async function refresh() {
     renderList();
     return true;
   } catch (err) {
-    setConnected(false, 'Connection failed');
+    setConnected(false, 'Povezivanje nije uspelo');
     showError([err.message]);
     renderList();
     return false;
@@ -280,7 +281,7 @@ function refreshTimeOptions() {
 
   const win = dayWindow(dateStr, admin.config);
   el('f-window').textContent =
-    (win.isWeekend ? 'Weekend' : 'Weekday') + ': bookable ' + win.label + '.';
+    (win.isWeekend ? 'Vikend' : 'Radni dan') + ': termini ' + win.label + '.';
 
   const boundaries = slotBoundaries(dateStr, admin.config);
   fillOptions(startSelect, boundaries.slice(0, -1));
@@ -327,12 +328,12 @@ async function submitForm() {
   if (admin.busy) return;
 
   if (!admin.token) {
-    showError(['Connect with a token before saving. Open Settings above.']);
+    showError(['Povežite se tokenom pre čuvanja. Otvorite Podešavanja iznad.']);
     el('conn-panel').classList.remove('collapsed');
     return;
   }
   if (!admin.data) {
-    showError(['The schedule has not loaded yet. Press Reload.']);
+    showError(['Raspored još nije učitan. Pritisnite Osveži.']);
     return;
   }
 
@@ -355,7 +356,7 @@ async function submitForm() {
     exitEditMode();
     el('f-name').value = '';
     renderList();
-    showOk((editing ? 'Saved' : 'Added') + ' ' + label + '. The public calendar updates in about a minute.');
+    showOk((editing ? 'Sačuvano: ' : 'Dodato: ') + label + '. Javni kalendar se ažurira za oko minut.');
     if (check.warnings.length) showWarn(check.warnings);
   } catch (err) {
     showError(err instanceof ValidationError ? err.messages : [err.message]);
@@ -366,8 +367,8 @@ async function submitForm() {
 
 function enterEditMode(booking) {
   admin.editingId = booking.id;
-  el('form-title').textContent = 'Edit booking';
-  el('f-submit').textContent = 'Save changes';
+  el('form-title').textContent = 'Izmena termina';
+  el('f-submit').textContent = 'Sačuvaj izmene';
   el('f-cancel').hidden = false;
   el('f-date').value = booking.date;
   refreshTimeOptions();
@@ -381,14 +382,14 @@ function enterEditMode(booking) {
 
 function exitEditMode() {
   admin.editingId = null;
-  el('form-title').textContent = 'Add a booking';
-  el('f-submit').textContent = 'Add booking';
+  el('form-title').textContent = 'Novi termin';
+  el('f-submit').textContent = 'Dodaj termin';
   el('f-cancel').hidden = true;
 }
 
 async function deleteBooking(booking) {
   const label = booking.date + ' ' + booking.start + '-' + booking.end + ' (' + booking.name + ')';
-  if (!confirm('Delete this booking?\n\n' + label)) return;
+  if (!confirm('Obrisati ovaj termin?\n\n' + label)) return;
 
   clearMessages();
   setBusy(true);
@@ -398,7 +399,7 @@ async function deleteBooking(booking) {
     });
     if (admin.editingId === booking.id) exitEditMode();
     renderList();
-    showOk('Deleted ' + label + '. The public calendar updates in about a minute.');
+    showOk('Obrisano: ' + label + '. Javni kalendar se ažurira za oko minut.');
   } catch (err) {
     showError([err.message]);
   } finally {
@@ -418,14 +419,14 @@ function renderList() {
   if (!admin.data) {
     el('list-empty').hidden = false;
     el('list-empty').textContent = admin.token
-      ? 'Not loaded. Press Reload.'
-      : 'Connect with a token to see and edit bookings.';
+      ? 'Nije učitano. Pritisnite Osveži.'
+      : 'Povežite se tokenom da biste videli i menjali termine.';
     return;
   }
 
   const slots = bookingsForMonth(currentBookings(), month);
   el('list-empty').hidden = slots.length > 0;
-  el('list-empty').textContent = 'No bookings this month.';
+  el('list-empty').textContent = 'Nema termina u ovom mesecu.';
 
   let group = null;
   let currentDate = null;
@@ -459,13 +460,13 @@ function renderList() {
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.className = 'small';
-    edit.textContent = 'Edit';
+    edit.textContent = 'Izmeni';
     edit.addEventListener('click', () => enterEditMode(booking));
 
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'small danger';
-    remove.textContent = 'Delete';
+    remove.textContent = 'Obriši';
     remove.addEventListener('click', () => deleteBooking(booking));
 
     actions.append(edit, remove);
@@ -475,7 +476,7 @@ function renderList() {
 
   if (admin.data.updated) {
     const when = new Date(admin.data.updated);
-    if (!isNaN(when)) el('updated-note').textContent = 'File updated ' + when.toLocaleString();
+    if (!isNaN(when)) el('updated-note').textContent = 'Fajl ažuriran ' + when.toLocaleString(LOCALE);
   }
 }
 
@@ -488,8 +489,8 @@ function setBusy(busy) {
   admin.busy = busy;
   for (const id of ['f-submit', 'reload', 'conn-save']) el(id).disabled = busy;
   el('f-submit').textContent = busy
-    ? 'Saving…'
-    : (admin.editingId ? 'Save changes' : 'Add booking');
+    ? 'Čuvanje…'
+    : (admin.editingId ? 'Sačuvaj izmene' : 'Dodaj termin');
 }
 
 function clearMessages() {

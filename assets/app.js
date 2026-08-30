@@ -33,14 +33,14 @@ async function init() {
 
 function applyConfig() {
   const cfg = view.config;
-  document.title = cfg.studioName + ' — Booking calendar';
+  document.title = cfg.studioName + ' — Kalendar termina';
   el('studio-name').textContent = cfg.studioName;
 
   const weekday = cfg.hours.weekday;
   const weekend = cfg.hours.weekend;
   el('hours-summary').textContent =
-    'Mon–Fri ' + weekday.open + '–' + weekday.close + ' · Sat–Sun ' + weekend.open + '–' + weekend.close;
-  el('tz-note').textContent = 'All times ' + cfg.timezone + '. Pick a day to see its bookings.';
+    'Pon–Pet ' + weekday.open + '–' + weekday.close + ' · Sub–Ned ' + weekend.open + '–' + weekend.close;
+  el('tz-note').textContent = 'Sva vremena su u zoni ' + cfg.timezone + '. Izaberite dan da vidite termine.';
 
   const contact = el('contact-link');
   if (cfg.contact && cfg.contact.href && cfg.contact.label) {
@@ -70,7 +70,7 @@ async function loadBookings() {
     error.hidden = true;
   } catch (err) {
     view.bookings = [];
-    error.textContent = 'The schedule could not be loaded. Reload the page, or try again shortly.';
+    error.textContent = 'Raspored nije moguće učitati. Osvežite stranicu ili pokušajte ponovo za koji trenutak.';
     error.hidden = false;
     console.error(err);
   }
@@ -145,7 +145,7 @@ function renderMonth() {
     if (dateStr === view.selected) cell.classList.add('selected');
     if (isWeekend(dateStr, cfg)) cell.classList.add('weekend');
     cell.setAttribute('aria-label',
-      longDateLabel(dateStr) + (count ? ', ' + count + ' booked' : ', free'));
+      longDateLabel(dateStr) + (count ? ' termina: ' + count : ' slobodno'));
 
     const num = document.createElement('span');
     num.className = 'cal-num';
@@ -182,7 +182,7 @@ function renderDay() {
 
   el('day-title').textContent = longDateLabel(dateStr);
   el('day-window').textContent =
-    (win.isWeekend ? 'Weekend' : 'Weekday') + ' hours: ' + win.label;
+    (win.isWeekend ? 'Vikend' : 'Radni dan') + ': termini ' + win.label;
 
   const slots = bookingsForDate(view.bookings, dateStr);
   const list = el('day-slots');
@@ -211,7 +211,7 @@ function renderDay() {
   if (free.length) {
     const heading = document.createElement('p');
     heading.className = 'hint';
-    heading.textContent = 'Free:';
+    heading.textContent = 'Slobodno:';
     const chips = document.createElement('div');
     chips.className = 'free-list';
     for (const range of free) {
@@ -228,7 +228,7 @@ function renderUpdated() {
   if (!view.updated) return;
   const when = new Date(view.updated);
   if (isNaN(when)) return;
-  el('updated-note').textContent = 'Updated ' + when.toLocaleString();
+  el('updated-note').textContent = 'Ažurirano ' + when.toLocaleString(LOCALE);
 }
 
 /* ---------- iCalendar export ----------
@@ -239,7 +239,7 @@ function downloadMonthIcs() {
   const month = monthKey(view.month);
   const slots = bookingsForMonth(view.bookings, month);
   if (!slots.length) {
-    alert('No bookings in ' + MONTH_NAMES[view.month.getMonth()] + ' to export.');
+    alert('Nema termina za izvoz u mesecu ' + MONTH_NAMES[view.month.getMonth()] + '.');
     return;
   }
 

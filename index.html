@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="sr-Latn-RS">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio Scheduler</title>
-<meta name="description" content="Studio booking calendar.">
+<title>Kalendar termina</title>
+<meta name="description" content="Kalendar termina studija.">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -20,11 +20,11 @@
 
   <section class="panel">
     <div class="cal-toolbar">
-      <button type="button" id="prev-month" aria-label="Previous month">&lsaquo;</button>
-      <button type="button" id="this-month">Today</button>
+      <button type="button" id="prev-month" aria-label="Prethodni mesec">&lsaquo;</button>
+      <button type="button" id="this-month">Danas</button>
       <div class="cal-title" id="cal-title" aria-live="polite"></div>
       <button type="button" class="small" id="export-ics">.ics</button>
-      <button type="button" id="next-month" aria-label="Next month">&rsaquo;</button>
+      <button type="button" id="next-month" aria-label="Sledeći mesec">&rsaquo;</button>
     </div>
     <div class="cal-grid" id="cal-head" aria-hidden="true"></div>
     <div class="cal-grid" id="cal-grid"></div>
@@ -34,14 +34,14 @@
     <h2 id="day-title"></h2>
     <p class="day-window" id="day-window"></p>
     <ul class="slot-list" id="day-slots"></ul>
-    <p class="empty" id="day-empty" hidden>No bookings on this day.</p>
+    <p class="empty" id="day-empty" hidden>Nema termina za ovaj dan.</p>
     <div id="day-free"></div>
   </section>
 
   <footer class="site-footer">
     <a id="contact-link" hidden></a>
     <span id="updated-note"></span>
-    <a href="admin.html">Admin</a>
+    <a href="admin.html">Administracija</a>
   </footer>
 
 </div>

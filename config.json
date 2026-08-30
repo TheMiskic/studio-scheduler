@@ -9,7 +9,7 @@
     "weekend": { "open": "00:00", "close": "24:00" }
   },
   "contact": {
-    "label": "Request a slot",
+    "label": "Zatraži termin",
     "href": "mailto:you@example.com"
   },
   "repo": {

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="sr-Latn-RS">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin — Studio Scheduler</title>
+<title>Administracija — Kalendar termina</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -11,7 +11,7 @@
 <div class="wrap">
 
   <header class="site-header">
-    <h1>Admin</h1>
+    <h1>Administracija</h1>
     <span class="sub" id="studio-name"></span>
   </header>
   <p class="hours-note" id="hours-summary"></p>
@@ -19,29 +19,29 @@
   <!-- Connection -->
   <section class="panel collapsed" id="conn-panel">
     <div class="panel-head">
-      <h2 style="margin:0"><span class="status-dot off" id="conn-dot"></span><span id="conn-status">Not connected</span></h2>
-      <button type="button" class="small" id="conn-toggle">Settings</button>
+      <h2 style="margin:0"><span class="status-dot off" id="conn-dot"></span><span id="conn-status">Niste povezani</span></h2>
+      <button type="button" class="small" id="conn-toggle">Podešavanja</button>
     </div>
     <div class="panel-body" style="margin-top:14px">
       <div class="field-row">
-        <div class="field"><label for="repo-owner">Owner</label><input id="repo-owner" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="repo-name">Repository</label><input id="repo-name" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="repo-branch">Branch</label><input id="repo-branch" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="repo-owner">Vlasnik</label><input id="repo-owner" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="repo-name">Repozitorijum</label><input id="repo-name" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="repo-branch">Grana</label><input id="repo-branch" autocomplete="off" spellcheck="false"></div>
       </div>
       <div class="field-row">
         <div class="field wide">
-          <label for="token">Fine-grained token (Contents: Read and write, this repository only)</label>
+          <label for="token">Fine-grained token (Contents: Read and write, samo ovaj repozitorijum)</label>
           <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_...">
         </div>
       </div>
       <div class="button-row">
-        <button type="button" class="primary" id="conn-save">Connect</button>
-        <button type="button" id="conn-clear">Disconnect</button>
+        <button type="button" class="primary" id="conn-save">Poveži</button>
+        <button type="button" id="conn-clear">Prekini vezu</button>
       </div>
       <p class="hint">
-        The token is stored in this browser only and is sent to api.github.com and nowhere else.
-        It is never committed to the repository. Use a fine-grained token limited to this one
-        repository, with Contents: Read and write and no other permission.
+        Token se čuva samo u ovom pregledaču i šalje se isključivo na api.github.com. Nikada se ne
+        upisuje u repozitorijum. Koristite fine-grained token ograničen na ovaj jedan repozitorijum,
+        sa dozvolom Contents: Read and write i nijednom drugom.
       </p>
     </div>
   </section>
@@ -52,37 +52,37 @@
 
   <!-- Booking form -->
   <section class="panel">
-    <h2 id="form-title">Add a booking</h2>
+    <h2 id="form-title">Novi termin</h2>
     <div class="field-row">
-      <div class="field"><label for="f-date">Date</label><input id="f-date" type="date"></div>
-      <div class="field"><label for="f-start">Start</label><select id="f-start"></select></div>
-      <div class="field"><label for="f-end">End</label><select id="f-end"></select></div>
+      <div class="field"><label for="f-date">Datum</label><input id="f-date" type="date"></div>
+      <div class="field"><label for="f-start">Početak</label><select id="f-start"></select></div>
+      <div class="field"><label for="f-end">Kraj</label><select id="f-end"></select></div>
     </div>
     <div class="field-row">
-      <div class="field wide"><label for="f-name">Name</label><input id="f-name" maxlength="60" autocomplete="off"></div>
+      <div class="field wide"><label for="f-name">Ime</label><input id="f-name" maxlength="60" autocomplete="off"></div>
     </div>
     <p class="hint" id="f-window"></p>
     <div class="button-row" style="margin-top:10px">
-      <button type="button" class="primary" id="f-submit">Add booking</button>
-      <button type="button" id="f-cancel" hidden>Cancel</button>
+      <button type="button" class="primary" id="f-submit">Dodaj termin</button>
+      <button type="button" id="f-cancel" hidden>Otkaži</button>
     </div>
   </section>
 
   <!-- Bookings -->
   <section class="panel">
     <div class="cal-toolbar">
-      <button type="button" id="prev-month" aria-label="Previous month">&lsaquo;</button>
-      <button type="button" id="this-month">Today</button>
+      <button type="button" id="prev-month" aria-label="Prethodni mesec">&lsaquo;</button>
+      <button type="button" id="this-month">Danas</button>
       <div class="cal-title" id="list-title"></div>
-      <button type="button" class="small" id="reload">Reload</button>
-      <button type="button" id="next-month" aria-label="Next month">&rsaquo;</button>
+      <button type="button" class="small" id="reload">Osveži</button>
+      <button type="button" id="next-month" aria-label="Sledeći mesec">&rsaquo;</button>
     </div>
     <div id="list"></div>
-    <p class="empty" id="list-empty" hidden>No bookings this month.</p>
+    <p class="empty" id="list-empty" hidden>Nema termina u ovom mesecu.</p>
   </section>
 
   <footer class="site-footer">
-    <a href="index.html">Public calendar</a>
+    <a href="index.html">Javni kalendar</a>
     <span id="updated-note"></span>
   </footer>
 
