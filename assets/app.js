@@ -48,6 +48,12 @@ function applyConfig() {
     contact.href = cfg.contact.href;
     contact.textContent = cfg.contact.label;
     contact.hidden = false;
+    /* A form lives on another site, so open it in a new tab and leave the
+       calendar where it was. A mailto: hands off to the mail client instead. */
+    if (/^https?:/i.test(cfg.contact.href)) {
+      contact.target = '_blank';
+      contact.rel = 'noopener noreferrer';
+    }
   }
 
   const head = el('cal-head');

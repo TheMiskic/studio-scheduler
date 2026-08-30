@@ -81,8 +81,8 @@ on top of a weekly slot and a new weekly rule cannot be created over an existing
 Bump the version query in both `index.html` and `admin.html`:
 
 ```
-<link rel="stylesheet" href="assets/style.css?v=3">
-<script src="assets/common.js?v=3"></script>
+<link rel="stylesheet" href="assets/style.css?v=4">
+<script src="assets/common.js?v=4"></script>
 ```
 
 GitHub Pages caches assets for ten minutes, so without a new number a returning visitor gets the
