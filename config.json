@@ -1,0 +1,20 @@
+{
+  "studioName": "Studio",
+  "timezone": "Europe/Belgrade",
+  "slotMinutes": 30,
+  "weekStart": 1,
+  "hours": {
+    "weekendDays": [0, 6],
+    "weekday": { "open": "16:00", "close": "24:00" },
+    "weekend": { "open": "00:00", "close": "24:00" }
+  },
+  "contact": {
+    "label": "Request a slot",
+    "href": "mailto:you@example.com"
+  },
+  "repo": {
+    "owner": "",
+    "name": "",
+    "branch": "main"
+  }
+}

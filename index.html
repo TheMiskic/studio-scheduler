@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio Scheduler</title>
+<meta name="description" content="Studio booking calendar.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site-header">
+    <h1 id="studio-name">Studio</h1>
+    <span class="sub" id="hours-summary"></span>
+  </header>
+  <p class="hours-note" id="tz-note"></p>
+
+  <div class="msg error" id="load-error" hidden></div>
+
+  <section class="panel">
+    <div class="cal-toolbar">
+      <button type="button" id="prev-month" aria-label="Previous month">&lsaquo;</button>
+      <button type="button" id="this-month">Today</button>
+      <div class="cal-title" id="cal-title" aria-live="polite"></div>
+      <button type="button" class="small" id="export-ics">.ics</button>
+      <button type="button" id="next-month" aria-label="Next month">&rsaquo;</button>
+    </div>
+    <div class="cal-grid" id="cal-head" aria-hidden="true"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </section>
+
+  <section class="panel" id="day-panel" hidden>
+    <h2 id="day-title"></h2>
+    <p class="day-window" id="day-window"></p>
+    <ul class="slot-list" id="day-slots"></ul>
+    <p class="empty" id="day-empty" hidden>No bookings on this day.</p>
+    <div id="day-free"></div>
+  </section>
+
+  <footer class="site-footer">
+    <a id="contact-link" hidden></a>
+    <span id="updated-note"></span>
+    <a href="admin.html">Admin</a>
+  </footer>
+
+</div>
+<script src="assets/common.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
