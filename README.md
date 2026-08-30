@@ -31,6 +31,12 @@ window for the chosen date, and validation rejects anything outside it.
    request a slot. Leave `repo` empty — the admin page detects it from the Pages URL — or fill it in
    if you use a custom domain.
 
+   Prefer a form URL (Google Forms, Tally, Formspree) over a `mailto:` address. Everything in
+   `config.json` is served by Pages and readable with a plain `curl`, whether or not the repository
+   is private, so an address put here is public to scrapers. A form keeps your inbox out of the
+   page entirely. If you do want a `mailto:`, use a disposable alias you can throw away rather than
+   your main address. An empty `href` hides the contact link.
+
 4. **Create a token.** GitHub → Settings → Developer settings → Personal access tokens →
    *Fine-grained tokens* → Generate new token:
    - Repository access: **Only select repositories** → this repository
