@@ -1,5 +1,13 @@
 {
   "version": 1,
-  "updated": "2026-08-30T00:00:00.000Z",
-  "bookings": []
+  "updated": "2026-08-30T10:19:46.392Z",
+  "bookings": [
+    {
+      "id": "b_ac056467",
+      "date": "2026-08-30",
+      "start": "16:00",
+      "end": "18:00",
+      "name": "Terrachontula"
+    }
+  ]
 }
