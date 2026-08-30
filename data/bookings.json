@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-08-30T10:20:13.008Z",
+  "updated": "2026-08-30T10:20:45.303Z",
   "bookings": [
     {
       "id": "b_ac056467",
@@ -15,6 +15,13 @@
       "start": "18:00",
       "end": "21:00",
       "name": "Pesic"
+    },
+    {
+      "id": "b_b32c7a9b",
+      "date": "2026-09-02",
+      "start": "19:00",
+      "end": "22:00",
+      "name": "Bozidar Glisic"
     }
   ]
 }
