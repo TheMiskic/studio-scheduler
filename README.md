@@ -51,6 +51,18 @@ changes.
 The public site is served from a CDN and lags a commit by roughly 30–60 seconds. The admin page
 reads through the GitHub API instead, so it is always current.
 
+## After changing anything in `assets/`
+
+Bump the version query in both `index.html` and `admin.html`:
+
+```
+<link rel="stylesheet" href="assets/style.css?v=3">
+<script src="assets/common.js?v=3"></script>
+```
+
+GitHub Pages caches assets for ten minutes, so without a new number a returning visitor gets the
+new HTML with the old CSS and JavaScript.
+
 ## Security
 
 - Use a **fine-grained** token scoped to this repository with Contents: Read and write. A classic

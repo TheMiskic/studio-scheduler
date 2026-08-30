@@ -268,9 +268,22 @@ SPEC.md               this document
 5. Open `/admin.html`, confirm the detected repository, paste the token, save.
 6. Add a booking and confirm it appears on the public page after the rebuild.
 
+## 13a. Asset versioning
+
+GitHub Pages serves every file with `cache-control: max-age=600`, so a returning visitor keeps the
+previous CSS and JavaScript for up to ten minutes after a deploy — long enough to render new HTML
+against old scripts. The HTML therefore references assets with a version query,
+`assets/app.js?v=2`, which changes the cache key and forces a fresh copy.
+
+**Bump the number in both `index.html` and `admin.html` whenever a file under `assets/` changes.**
+`data/bookings.json` and `config.json` need no version, since the scripts already fetch them with a
+timestamp parameter and `cache: 'no-store'`.
+
 ## 14. Known limits
 
-- Public updates lag commits by roughly 30–60 seconds while Pages rebuilds.
+- Public updates lag commits by roughly 30–60 seconds while Pages rebuilds. Changed assets reach
+  returning visitors immediately only if the version query was bumped; otherwise up to ten minutes
+  later, when the browser cache expires.
 - The whole schedule loads at once. Performance is unaffected well past a thousand bookings; the
   file would only need yearly archiving far beyond realistic single-studio volume.
 - Concurrent admin edits are resolved by SHA conflict and retry, not prevented.
