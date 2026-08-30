@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-08-30T10:43:02.723Z",
+  "updated": "2026-08-30T13:14:48.205Z",
   "bookings": [
     {
       "id": "b_ac056467",
@@ -8,13 +8,6 @@
       "start": "16:00",
       "end": "18:00",
       "name": "Terrachontula"
-    },
-    {
-      "id": "b_b32c7a9b",
-      "date": "2026-09-02",
-      "start": "19:00",
-      "end": "22:00",
-      "name": "Bozidar Glisic"
     }
   ],
   "recurring": [
