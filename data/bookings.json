@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-08-30T10:42:31.788Z",
+  "updated": "2026-08-30T10:43:02.723Z",
   "bookings": [
     {
       "id": "b_ac056467",
@@ -17,5 +17,16 @@
       "name": "Bozidar Glisic"
     }
   ],
-  "recurring": []
+  "recurring": [
+    {
+      "id": "r_3d487fb2",
+      "weekday": 1,
+      "start": "18:00",
+      "end": "21:00",
+      "name": "Pesic",
+      "from": "2026-08-31",
+      "until": null,
+      "skip": []
+    }
+  ]
 }
