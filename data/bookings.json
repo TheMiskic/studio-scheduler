@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-08-31T20:59:14.612Z",
+  "updated": "2026-09-03T10:46:06.023Z",
   "bookings": [
     {
       "id": "b_ac056467",
@@ -15,6 +15,13 @@
       "start": "17:00",
       "end": "19:00",
       "name": "Pesic"
+    },
+    {
+      "id": "b_ceca7b9c",
+      "date": "2026-09-03",
+      "start": "18:00",
+      "end": "20:00",
+      "name": "Terrachontula"
     }
   ],
   "recurring": [
